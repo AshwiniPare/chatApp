@@ -24,11 +24,13 @@ const postUser = async (req, res, next) => {
         const saltRounds = 10;
         bcrypt.hash(password, saltRounds, async(err, hash) => {
             console.log(err);
-            await User.create( {name: name, email: email, phone: phone, password: hash});
+            const created = await User.create( {name: name, email: email, phone: phone, password: hash});
+            //if(!created)
+               // return res.status(500).json({success: false, message: "User already exists.Please login"})
             res.status(201).json({success: true, message: "Successfully created new user"});
         })
     } catch(err) {
-        return res.status(500).json({message: err})
+        return res.status(500).json({success: false, message: err})
     }
 };
 
@@ -54,7 +56,7 @@ async function postLogin (req, res, next) {
                 if(result === true)
                     return res.status(200).json({success: true, message: "User logged in successfully", token:generateAccessToken(user[0].id, user[0].name, user[0].isPremiumUser)})
                 else    
-                    return res.status(400).json({success: false, message: "Password is incorrect"})
+                    return res.status(401).json({success: false, message: "Password is incorrect"})
             })
         } else {
             return res.status(404).json({success: false, message: "User does not exist"})   
