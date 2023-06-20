@@ -10,6 +10,7 @@ const errorController = require('./controllers/error');
 const sequelize = require('./util/database');
 
 const User = require('./models/user');
+const Chat = require('./models/chat');
 //const ForgotPassword = require('./models/forgotPassword');
 const cors = require('cors');
 //const helmet = require('helmet');
@@ -24,6 +25,7 @@ app.use(cors());
 
 
 const userRoutes = require('./routes/user');
+const chatRoutes = require('./routes/chat');
 //const resetPasswordRoutes = require('./routes/resetPassword');
 //const { reset } = require('nodemon');
 
@@ -39,6 +41,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/user', userRoutes);
+app.use('/chat', chatRoutes);
 
 //app.use('/password', resetPasswordRoutes);
 
@@ -51,9 +54,12 @@ app.use((req, res) => {
 //User.hasMany(ForgotPassword);
 //ForgotPassword.belongsTo(User);
 
+User.hasMany(Chat);
+Chat.belongsTo(User)
+
 app.use(errorController.get404);
 
-sequelize.sync().then(result => {
+sequelize.sync({alter:true}).then(result => {
     console.log(result);
    // https.createServer({key: privateKey, cert: certificate }, app).listen(process.env.PORT || 3000);
     app.listen(process.env.PORT || 3000);

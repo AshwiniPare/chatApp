@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+  <title>ChatApp</title>
+  <style>
+    footer {
+      text-align: center;
+      padding: 3px;
+      background-color: DarkSalmon;
+      color: white;
+    }
+    </style>
+</head>
+<body><header id="main-header" class="bg-success text-white p-4 mb-3">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+            <h1 id="header-title">Chat App</h1>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="container">
+   <div id="main" class="card card-body">
+    <label class="form-label" style="text-align:center;"><b>Chat App</b></label><br>
+    <form id="addForm" onsubmit="send(event)" class="form-inline mb-3">
+        <div id="chatsDiv"></div>
+        <footer>
+        <input type="text" id="message" name="message" required>
+        <input type="submit" class="btn btn-dark" value="Send">
+      </footer>
+      
+      </form>
+   </div>
+  
+  </div>
+  
+  <script defer src ="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
