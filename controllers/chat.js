@@ -1,5 +1,6 @@
 const Chat = require('../models/chat');
 const User = require('../models/user');
+const { Op } = require("sequelize");
 
 function stringInvalid(string) {
     if( string == undefined || string.length === 0 )
@@ -10,7 +11,12 @@ function stringInvalid(string) {
 
 exports.getChat = async(req, res, next) => {
     try {
+        const lastMsgId = req.query.lastMsgId;
+
         const chats = await Chat .findAll({
+           where: { id:  {
+            [Op.gt]: lastMsgId
+        }},
             attributes: {
                 exclude: ['createdAt', 'updatedAt']
             },

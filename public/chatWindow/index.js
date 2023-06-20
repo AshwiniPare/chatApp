@@ -1,27 +1,48 @@
 const token = localStorage.getItem('token');
 const getChatsCalled = setInterval(getChats, 1000);
 
+
+
 window.addEventListener("DOMContentLoaded", async () => {
     try {
         const decodedToken = parseJwt(token);
         console.log(decodedToken);
         getChats();
-        
     } catch(error) {
         console.error(error);
     }
 })
 
-async function getChats(page) {
+async function getChats() {
     try {
-      
-        const response = await axios.get(`http://localhost:3000/chat/get-chat`, { headers: {"Authorization": token}})
+        let chatLocalStorage = JSON.parse(localStorage.getItem('chats'));
+        let lastMsgId;
+        if(chatLocalStorage) {
+         lastMsgId = chatLocalStorage[chatLocalStorage.length-1].id;
+         console.log(lastMsgId);
+        }
+
+        if(lastMsgId == undefined)
+            lastMsgId = -1;
+            
+        const response = await axios.get(`http://localhost:3000/chat/get-chat?lastMsgId=${lastMsgId}`, { headers: {"Authorization": token}})
+        const allChats = response.data.allChats;
+        if(chatLocalStorage)
+            chatLocalStorage = chatLocalStorage.concat(allChats);
+        else
+            chatLocalStorage = allChats;
+        localStorage.setItem('chats', JSON.stringify(chatLocalStorage));
+        chatLocalStorage = JSON.parse(localStorage.getItem('chats'));
+        if(chatLocalStorage.length > 10) {
+            chatLocalStorage = chatLocalStorage.slice(-10);
+        }
+
         document.getElementById('chatsDiv').innerHTML ="";
-        for(let i=0; i<response.data.allChats.length; i++) {
+        for(let i=0; i<chatLocalStorage.length; i++) {
             const para = document.createElement("p");
             if(i%2 == 0)
                 para.style.backgroundColor = "grey";
-            const node = document.createTextNode(response.data.allChats[i].user.name + ": "+ response.data.allChats[i].message);
+            const node = document.createTextNode(chatLocalStorage[i].user.name + ": "+ chatLocalStorage[i].message);
             para.appendChild(node);
 
             const element = document.getElementById("chatsDiv");
@@ -55,7 +76,8 @@ async function send(event) {
         }
         
         const response = await axios.post('http://localhost:3000/chat/add-message', message, { headers: {"Authorization": token}});
-        getChats(response.data.allChats);
+        getChats();
+        document.getElementById('message').value = '';
     } catch(err) {
         document.body.innerHTML += `<div style="color:red;">${err.response.data.message}</div>`
         console.error(err);
