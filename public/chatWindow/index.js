@@ -1,10 +1,12 @@
 const token = localStorage.getItem('token');
+const getChatsCalled = setInterval(getChats, 1000);
 
 window.addEventListener("DOMContentLoaded", async () => {
     try {
         const decodedToken = parseJwt(token);
         console.log(decodedToken);
         getChats();
+        
     } catch(error) {
         console.error(error);
     }
@@ -14,6 +16,7 @@ async function getChats(page) {
     try {
       
         const response = await axios.get(`http://localhost:3000/chat/get-chat`, { headers: {"Authorization": token}})
+        document.getElementById('chatsDiv').innerHTML ="";
         for(let i=0; i<response.data.allChats.length; i++) {
             const para = document.createElement("p");
             if(i%2 == 0)
