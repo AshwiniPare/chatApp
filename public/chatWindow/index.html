@@ -7,11 +7,25 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
   <title>ChatApp</title>
   <style>
+    .form-popup {
+  display: none;
+  top: 8px;
+  left: 16px;
+  border: 3px solid #f1f1f1;
+  z-index: 9;
+}
     footer {
       text-align: center;
       padding: 3px;
       background-color: DarkSalmon;
       color: white;
+    }
+
+    .memberBtn {
+      width: 100%;
+      border: none;
+      background-color: greenyellow;
+      font-weight: bold;
     }
     </style>
 </head>
@@ -24,10 +38,20 @@
       </div>
     </div>
   </header>
-  <div class="container">
-   <div id="main" class="card card-body">
+  <div class="container" style="background-color: gray; width: 100%; height: 100;">
+    <div id="leftPane" style="background-color: greenyellow; width: 30%; height: 550px; float:left;"> 
+      <button type="button" style="background-color: lightskyblue;width: 100%;font-weight: bold;" id="newGroup">Add New Group</button>
+      <div id="contactForm">
+        <form class="form-container"> 
+        </form>
+      </div>
+      <ul id="userList"></ul>
+    </div>
+
+   <div id="main" class="card card-body" style="background-color: lightgreen; width:70%; height: 550px;float:left;">
     <label class="form-label" style="text-align:center;"><b>Chat App</b></label><br>
-    <form id="addForm" onsubmit="send(event)" class="form-inline mb-3">
+ 
+    <form id="addForm" onsubmit="send(event)">
         <div id="chatsDiv"></div>
         <footer>
         <input type="text" id="message" name="message" required>
@@ -36,6 +60,8 @@
       
       </form>
    </div>
+
+
   
   </div>
   

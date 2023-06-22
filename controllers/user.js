@@ -67,4 +67,16 @@ async function postLogin (req, res, next) {
     }
 };
 
-module.exports = { generateAccessToken, postLogin, postUser };
+const getUsers = async (req, res, next) => {
+    try{
+        const users = await User.findAll({});
+        res.status(200).json({
+            allUsers: users
+        });
+    }catch(err) {
+        return res.status(500).json({success: false, message: err})
+    }
+    
+}
+
+module.exports = { generateAccessToken, postLogin, postUser, getUsers };
