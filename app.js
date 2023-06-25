@@ -1,7 +1,8 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
+const http = require('http');
+const socketIO = require('socket.io');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -20,7 +21,34 @@ const cors = require('cors');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: '*'
+}));
+
+const server = http.createServer(app);
+const io = socketIO(server);
+
+const users = {}
+
+io.on('connection', socket => {
+  socket.on('new-user', name => {
+   users[socket.id] = name
+  })
+
+  socket.on('join-group', (groupId) => {
+    socket.join(groupId);
+  })
+
+  socket.on('send-chat-message', (message,groupId) => {
+    //io to inform all the sockets in the group
+   io.to(groupId).emit('chat-message', { message: message, name: users[socket.id] })
+ 
+  })
+  socket.on('disconnect', () => {
+    delete users[socket.id]
+  })
+
+});
 
 //const privateKey = fs.readFileSync('server.key');
 //const certificate = fs.readFileSync('server.cert');
@@ -73,7 +101,7 @@ app.use(errorController.get404);
 sequelize.sync().then(result => {
     console.log(result);
    // https.createServer({key: privateKey, cert: certificate }, app).listen(process.env.PORT || 3000);
-    app.listen(process.env.PORT || 3000);
+    server.listen(process.env.PORT || 3000);
 })
 .catch(err => {
     console.log(err);

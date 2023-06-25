@@ -1,7 +1,34 @@
 const token = localStorage.getItem('token');
 let groupId;
 let adminOperation;
-const getChatsCalled = setInterval(getChats, 1000);
+//const getChatsCalled = setInterval(groupBtnClicked, 1000);
+
+const socket = io('http://localhost:3000')
+
+const name = prompt('What is your name?')
+appendMessage('You joined')
+socket.emit('new-user', name);
+
+socket.on('chat-message', data => {
+    appendMessage(`${data.name}: ${data.message.msg}`)
+  })
+  
+  socket.on('user-connected', name => {
+    appendMessage(`${name} connected`)
+  })
+  
+  socket.on('user-disconnected', name => {
+    appendMessage(`${name} disconnected`)
+  })
+
+  function appendMessage(message) {
+    const element = document.getElementById("chatsDiv");
+
+    const para = document.createElement("p");
+    const node = document.createTextNode(message);
+    para.appendChild(node);
+    element.appendChild(para);
+  }
 
 const newGroupButton = document.getElementById('newGroup');
 newGroupButton.addEventListener("click", function newgroup() {
@@ -53,6 +80,7 @@ async function openForm() {
         parentElem.appendChild(closeBtn);
         document.getElementById("contactForm").style.display = "block";
         document.getElementById('userList').hidden = true;
+        document.getElementById('groupList').hidden = true;
   }
 
   async function closeForm() {
@@ -71,6 +99,8 @@ async function openForm() {
               const response = await axios.post('http://localhost:3000/group/add-group', group, { headers: {"Authorization": token}});
             }
            document.getElementById("contactForm").style.display = "none";
+           document.getElementById('userList').hidden = false;
+           document.getElementById('groupList').hidden = false;
            newGroupButton.style = "hidden";
   }
 
@@ -79,7 +109,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const decodedToken = parseJwt(token);
         console.log(decodedToken);
         showUserList();
-        getChats();
+       // getChats();
     } catch(error) {
         console.error(error);
     }
@@ -92,21 +122,24 @@ async function showUserList() {
         for(let i=0; i< response.data.allUsers.length; i++) {
             let individualBtn = document.createElement('input');
             individualBtn.type = "button";
-            individualBtn.className = "memberBtn";
+            individualBtn.style.border = "none";
+            individualBtn.style.background = "none";
             individualBtn.id = response.data.allUsers[i].id;
             individualBtn.value = response.data.allUsers[i].name;
-            individualBtn.onclick =  (event) => {
+           /* individualBtn.onclick =  (event) => {
                 getChats();
-            }
+            }*/
             var br = document.createElement('br');
             parentElem.appendChild(individualBtn);
             parentElem.appendChild(br);
         }
 
+        const parentElemGroup = document.getElementById('groupList');
         const groupResponse = await axios.get(`http://localhost:3000/group/get-groups`, { headers: {"Authorization": token}})
         for(let i=0; i< groupResponse.data.allGroups.length; i++) {
             groupBtn = document.createElement('input');
             groupBtn.type = "button";
+            //groupBtn.backgroundColor = "blue";
             groupBtn.className = "memberBtn";
             groupBtn.id = groupResponse.data.allGroups[i].id;
             groupBtn.value = groupResponse.data.allGroups[i].name;
@@ -115,8 +148,8 @@ async function showUserList() {
                 groupBtnClicked();
             }
             var br = document.createElement('br');
-            parentElem.appendChild(groupBtn);
-            parentElem.appendChild(br);
+            parentElemGroup.appendChild(groupBtn);
+            parentElemGroup.appendChild(br);
         }
     } catch(err) {
         console.error(err);
@@ -128,9 +161,11 @@ async function showGroupUsers() {
             const response = await axios.get(`http://localhost:3000/user/get-users?groupId=${groupId}`)
             let container = document.getElementById('contactForm');
             container.innerHTML = "";
+            let membersDiv = document.createElement('div');
             var selectLabel = document.createElement('label')
             selectLabel.appendChild(document.createTextNode("Select users from the list"));
-            container.appendChild(selectLabel);
+           // container.appendChild(selectLabel);
+           membersDiv.appendChild(selectLabel);
            for(let i=0; i< response.data.allUsers.length; i++) {
                 var checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
@@ -145,10 +180,15 @@ async function showGroupUsers() {
                 var br = document.createElement('br');
              
                 document.getElementById('userList').hidden = true;
+                document.getElementById('groupList').hidden = true;
                 document.getElementById('newGroup').hidden = true;
-                container.appendChild(checkbox);
-                container.appendChild(label);
-                container.appendChild(br);
+               // container.appendChild(checkbox);
+              //  container.appendChild(label);
+             //   container.appendChild(br);
+             membersDiv.appendChild(checkbox);
+             membersDiv.appendChild(label);
+             membersDiv.appendChild(br);
+             container.appendChild(membersDiv);
             }
 
             let addBtn = document.createElement('input');
@@ -175,6 +215,11 @@ async function showGroupUsers() {
                         }
                         
                     }
+                        container.removeChild(membersDiv);
+                        container.removeChild(addBtn);
+                        document.getElementById('userList').hidden = false;
+                        document.getElementById('groupList').hidden = false;
+                        document.getElementById('newGroup').hidden = false;
                 }
                 container.appendChild(addBtn);
         } catch(error) {
@@ -184,6 +229,7 @@ async function showGroupUsers() {
 
 async function groupBtnClicked() {
     try {
+        socket.emit('join-group', groupId);
         const response = await axios.get(`http://localhost:3000/chat/get-chat?groupId=${groupId}`, { headers: {"Authorization": token}})
         const allChats = response.data.allChats;
         document.getElementById('chatsDiv').innerHTML ="";
@@ -221,10 +267,10 @@ async function groupBtnClicked() {
 
         for(let i=0; i<response.data.allChats.length; i++) {
             const para = document.createElement("p");
-            if(i%2 == 0)
-                para.style.backgroundColor = "light grey";
             const node = document.createTextNode(response.data.allChats[i].user.name + ": "+ response.data.allChats[i].message);
             para.appendChild(node);
+            if(i%2 == 0)
+                para.style.backgroundColor = "light grey";
             element.appendChild(para);
         }
     }catch(error) {
@@ -233,6 +279,7 @@ async function groupBtnClicked() {
 };
 
 async function getChats() {
+    if(!groupId) {
     try {
         let chatLocalStorage = JSON.parse(localStorage.getItem('chats'));
         let lastMsgId;
@@ -272,6 +319,7 @@ async function getChats() {
         console.log(error);
     }
 }
+}
 
 function parseJwt (token) {
     var base64Url = token.split('.')[1];
@@ -293,11 +341,13 @@ async function send(event) {
         }
         
         const response = await axios.post('http://localhost:3000/chat/add-message', message, { headers: {"Authorization": token}});
-        if(!groupId)
-            getChats();
-        else {
-            groupBtnClicked();
-        }
+        socket.emit('send-chat-message', message, groupId);
+       // if(!groupId)
+           // getChats();
+       // else {
+          //  groupBtnClicked();
+       // }
+        
         document.getElementById('message').value = '';
     } catch(err) {
         document.body.innerHTML += `<div style="color:red;">${err.response.data.message}</div>`

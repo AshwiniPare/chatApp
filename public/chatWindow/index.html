@@ -6,6 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
   <title>ChatApp</title>
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
   <style>
     .form-popup {
   display: none;
@@ -22,10 +23,9 @@
     }
 
     .memberBtn {
-      width: 100%;
-      border: none;
       background-color: greenyellow;
       font-weight: bold;
+      color: black
     }
     </style>
 </head>
@@ -42,10 +42,11 @@
     <div id="leftPane" style="background-color: greenyellow; width: 30%; height: 550px; float:left;"> 
       <button type="button" style="background-color: lightskyblue;width: 100%;font-weight: bold;" id="newGroup">Add New Group</button>
       <div id="contactForm">
-        <form class="form-container"> 
+        <form > 
         </form>
       </div>
       <ul id="userList"></ul>
+      <ul id="groupList"></ul>
     </div>
 
    <div id="main" class="card card-body" style="background-color: lightgreen; width:70%; height: 550px;float:left;">
@@ -66,6 +67,6 @@
   </div>
   
   <script defer src ="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
-  <script src="index.js"></script>
+  <script defer  src="index.js"></script>
 </body>
 </html>
