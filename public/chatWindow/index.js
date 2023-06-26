@@ -1,12 +1,13 @@
 const token = localStorage.getItem('token');
 let groupId;
 let adminOperation;
+let toggleColor = true;
 //const getChatsCalled = setInterval(groupBtnClicked, 1000);
 
 const socket = io('http://localhost:3000')
 
 const name = prompt('What is your name?')
-appendMessage('You joined')
+//appendMessage('You joined')
 socket.emit('new-user', name);
 
 socket.on('chat-message', data => {
@@ -23,11 +24,12 @@ socket.on('chat-message', data => {
 
   function appendMessage(message) {
     const element = document.getElementById("chatsDiv");
-
-    const para = document.createElement("p");
-    const node = document.createTextNode(message);
-    para.appendChild(node);
-    element.appendChild(para);
+    const messageElement = document.createElement('div');
+    messageElement.innerText = message;
+    if(toggleColor)
+        messageElement.style.backgroundColor = "lightgrey";
+    toggleColor = !toggleColor;
+    element.appendChild(messageElement);
   }
 
 const newGroupButton = document.getElementById('newGroup');
@@ -109,7 +111,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         const decodedToken = parseJwt(token);
         console.log(decodedToken);
         showUserList();
-       // getChats();
     } catch(error) {
         console.error(error);
     }
@@ -126,9 +127,6 @@ async function showUserList() {
             individualBtn.style.background = "none";
             individualBtn.id = response.data.allUsers[i].id;
             individualBtn.value = response.data.allUsers[i].name;
-           /* individualBtn.onclick =  (event) => {
-                getChats();
-            }*/
             var br = document.createElement('br');
             parentElem.appendChild(individualBtn);
             parentElem.appendChild(br);
@@ -139,7 +137,6 @@ async function showUserList() {
         for(let i=0; i< groupResponse.data.allGroups.length; i++) {
             groupBtn = document.createElement('input');
             groupBtn.type = "button";
-            //groupBtn.backgroundColor = "blue";
             groupBtn.className = "memberBtn";
             groupBtn.id = groupResponse.data.allGroups[i].id;
             groupBtn.value = groupResponse.data.allGroups[i].name;
@@ -164,8 +161,9 @@ async function showGroupUsers() {
             let membersDiv = document.createElement('div');
             var selectLabel = document.createElement('label')
             selectLabel.appendChild(document.createTextNode("Select users from the list"));
-           // container.appendChild(selectLabel);
+            var br = document.createElement('br');
            membersDiv.appendChild(selectLabel);
+           membersDiv.appendChild(br);
            for(let i=0; i< response.data.allUsers.length; i++) {
                 var checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
@@ -182,13 +180,11 @@ async function showGroupUsers() {
                 document.getElementById('userList').hidden = true;
                 document.getElementById('groupList').hidden = true;
                 document.getElementById('newGroup').hidden = true;
-               // container.appendChild(checkbox);
-              //  container.appendChild(label);
-             //   container.appendChild(br);
-             membersDiv.appendChild(checkbox);
-             membersDiv.appendChild(label);
-             membersDiv.appendChild(br);
-             container.appendChild(membersDiv);
+
+                membersDiv.appendChild(checkbox);
+                membersDiv.appendChild(label);
+                membersDiv.appendChild(br);
+                container.appendChild(membersDiv);
             }
 
             let addBtn = document.createElement('input');
@@ -266,12 +262,15 @@ async function groupBtnClicked() {
         }
 
         for(let i=0; i<response.data.allChats.length; i++) {
-            const para = document.createElement("p");
-            const node = document.createTextNode(response.data.allChats[i].user.name + ": "+ response.data.allChats[i].message);
-            para.appendChild(node);
-            if(i%2 == 0)
-                para.style.backgroundColor = "light grey";
-            element.appendChild(para);
+            const messageElement = document.createElement('div');
+            messageElement.innerText = response.data.allChats[i].user.name + ": "+ response.data.allChats[i].message;
+            
+            if(toggleColor) {
+                messageElement.style.backgroundColor = "grey";
+            }
+            toggleColor = !toggleColor;
+            element.appendChild(messageElement);
+
         }
     }catch(error) {
         console.log(error);
@@ -342,12 +341,6 @@ async function send(event) {
         
         const response = await axios.post('http://localhost:3000/chat/add-message', message, { headers: {"Authorization": token}});
         socket.emit('send-chat-message', message, groupId);
-       // if(!groupId)
-           // getChats();
-       // else {
-          //  groupBtnClicked();
-       // }
-        
         document.getElementById('message').value = '';
     } catch(err) {
         document.body.innerHTML += `<div style="color:red;">${err.response.data.message}</div>`
